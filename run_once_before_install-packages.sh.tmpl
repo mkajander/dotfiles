@@ -1,0 +1,75 @@
+#!/bin/bash
+# run_once_before_install-packages.sh.tmpl
+# This script installs all required packages and dependencies
+
+# Don't exit on error - allow partial installation to succeed
+set +e
+
+echo "🚀 Installing dependencies..."
+
+{{- if eq .chezmoi.os "darwin" }}
+# macOS installation
+echo "📦 Installing Homebrew packages for macOS..."
+brew install \
+  eza \
+  gh \
+  powerlevel10k \
+  zsh-autosuggestions \
+  zsh-syntax-highlighting \
+  bash-completion \
+  fzf \
+  fd \
+  bat \
+  tlrc \
+  thefuck \
+  zoxide \
+  azure-cli \
+  jesseduffield/lazygit/lazygit \
+  jesseduffield/lazydocker/lazydocker \
+  hcloud
+
+# Install terraform separately with better error handling
+echo "📦 Installing terraform..."
+brew tap hashicorp/tap
+if ! brew install hashicorp/tap/terraform; then
+  echo "⚠️  Warning: terraform installation failed, continuing..."
+fi
+
+{{- else if eq .chezmoi.os "linux" }}
+# Linux installation
+echo "📦 Installing Linuxbrew..."
+if [ ! -d "/home/linuxbrew/.linuxbrew" ]; then
+  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+fi
+
+eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+
+echo "📦 Installing Homebrew packages for Linux..."
+brew install \
+  eza \
+  gh \
+  powerlevel10k \
+  zsh-autosuggestions \
+  zsh-syntax-highlighting \
+  bash-completion \
+  fzf \
+  fd \
+  bat \
+  tlrc \
+  thefuck \
+  zoxide \
+  azure-cli \
+  jesseduffield/lazygit/lazygit \
+  jesseduffield/lazydocker/lazydocker \
+  hcloud
+
+# Install terraform separately with better error handling
+echo "📦 Installing terraform..."
+brew tap hashicorp/tap
+if ! brew install hashicorp/tap/terraform; then
+  echo "⚠️  Warning: terraform installation failed, continuing..."
+fi
+{{- end }}
+
+echo "✅ Package installation complete!"
+exit 0

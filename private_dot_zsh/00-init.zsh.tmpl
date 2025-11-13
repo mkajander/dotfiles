@@ -1,0 +1,26 @@
+# 00-init.zsh.tmpl
+# Initial setup, PATH configuration, and environment exports
+
+{{- if eq .chezmoi.os "linux" -}}
+# Initialize Linuxbrew on Linux
+eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+{{- end }}
+
+# Enable Powerlevel10k instant prompt
+if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+fi
+
+# PATH exports
+export DOTNET_ROOT="$HOME/.dotnet"
+export PATH="$DOTNET_ROOT:$HOME/.dotnet/tools:$PATH"
+
+# Android SDK setup
+if [[ -d "$HOME/Android/Sdk/platform-tools" ]]; then
+  export ANDROID_HOME="$HOME/Android/Sdk"
+  export PATH=$PATH:$ANDROID_HOME/emulator
+  export PATH=$PATH:$ANDROID_HOME/platform-tools
+fi
+
+# Environment variables
+export FUNCTIONS_CORE_TOOLS_TELEMETRY_OPTOUT=1

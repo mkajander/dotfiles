@@ -1,0 +1,89 @@
+#Requires -RunAsAdministrator
+# run_once_before_install-packages.ps1.tmpl
+# This script installs all required packages and dependencies on Windows
+
+# Don't exit on error - allow partial installation to succeed
+$ErrorActionPreference = "Continue"
+
+Write-Host "🚀 Installing dependencies for Windows..." -ForegroundColor Cyan
+Write-Host ""
+
+# Check if winget is available
+if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
+    Write-Host "❌ winget is not available. Please install App Installer from the Microsoft Store or update Windows." -ForegroundColor Red
+    Write-Host "   Falling back to manual installation instructions..." -ForegroundColor Yellow
+    Write-Host ""
+    Write-Host "Please install the following tools manually:" -ForegroundColor Yellow
+    Write-Host "  - Git: https://git-scm.com/download/win" -ForegroundColor Yellow
+    Write-Host "  - PowerShell 7+: https://aka.ms/powershell" -ForegroundColor Yellow
+    Write-Host "  - Windows Terminal: https://aka.ms/terminal" -ForegroundColor Yellow
+    exit 1
+}
+
+Write-Host "📦 Installing packages with winget..." -ForegroundColor Cyan
+
+# Essential tools
+$packages = @(
+    "Git.Git",                          # Git
+    "Microsoft.PowerShell",             # PowerShell 7+
+    "Microsoft.WindowsTerminal",        # Windows Terminal
+    "JanDeDobbeleer.OhMyPosh",          # Oh My Posh (prompt theme)
+    "GitHub.cli",                       # GitHub CLI
+    "eza-community.eza",                # Modern ls replacement
+    "sharkdp.bat",                      # Cat with syntax highlighting
+    "sharkdp.fd",                       # Fast find alternative
+    "junegunn.fzf",                     # Fuzzy finder
+    "ajeetdsouza.zoxide",               # Smarter cd
+    "jesseduffield.lazygit",            # Terminal UI for git
+    "jesseduffield.lazydocker",         # Terminal UI for docker
+    "HashiCorp.Terraform",              # Infrastructure as Code
+    "Microsoft.AzureCLI",               # Azure CLI
+    "Schniz.fnm"                        # Fast Node Manager
+)
+
+foreach ($package in $packages) {
+    Write-Host "Installing $package..." -ForegroundColor Green
+    winget install --id $package --exact --source winget --silent --accept-source-agreements --accept-package-agreements 2>$null
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "⚠️  Warning: Failed to install $package, continuing..." -ForegroundColor Yellow
+    }
+}
+
+Write-Host ""
+Write-Host "📦 Configuring PowerShell modules..." -ForegroundColor Cyan
+
+# Trust PSGallery to avoid interactive prompts (optional)
+try {
+    $psGallery = Get-PSRepository -Name 'PSGallery' -ErrorAction Stop
+    if ($psGallery.InstallationPolicy -ne 'Trusted') {
+        Set-PSRepository -Name 'PSGallery' -InstallationPolicy Trusted
+    }
+} catch {
+    Write-Host "⚠️  Could not configure PSGallery repository, continuing..." -ForegroundColor Yellow
+}
+
+# Install PSReadLine module (enhanced command line editing)
+if (-not (Get-Module -ListAvailable -Name PSReadLine)) {
+    Install-Module -Name PSReadLine -Scope CurrentUser -Force -SkipPublisherCheck -AllowClobber
+}
+
+# Install PSFzf module (FZF integration for PowerShell)
+if (-not (Get-Module -ListAvailable -Name PSFzf)) {
+    Install-Module -Name PSFzf -Scope CurrentUser -Force -SkipPublisherCheck -AllowClobber
+}
+
+# Install posh-git module (Git integration for PowerShell)
+if (-not (Get-Module -ListAvailable -Name posh-git)) {
+    Install-Module -Name posh-git -Scope CurrentUser -Force -SkipPublisherCheck -AllowClobber
+}
+
+# Install Terminal-Icons module (file icons in terminal)
+if (-not (Get-Module -ListAvailable -Name Terminal-Icons)) {
+    Install-Module -Name Terminal-Icons -Scope CurrentUser -Force -SkipPublisherCheck -AllowClobber
+}
+
+Write-Host ""
+Write-Host "✅ Package installation complete!" -ForegroundColor Green
+Write-Host ""
+Write-Host "⚠️  Note: You may need to restart your terminal for all changes to take effect." -ForegroundColor Yellow
+exit 0

@@ -1,0 +1,20 @@
+# 00-init.ps1
+# Initial setup, PATH configuration, and environment exports
+
+# Oh My Posh initialization
+if (Get-Command oh-my-posh -ErrorAction SilentlyContinue) {
+    oh-my-posh init pwsh | Invoke-Expression
+}
+
+# PATH exports
+$env:DOTNET_ROOT = "$HOME\.dotnet"
+$env:PATH = "$env:DOTNET_ROOT;$HOME\.dotnet\tools;$env:PATH"
+
+# Android SDK setup (if installed)
+if (Test-Path "$HOME\AppData\Local\Android\Sdk\platform-tools") {
+    $env:ANDROID_HOME = "$HOME\AppData\Local\Android\Sdk"
+    $env:PATH = "$env:PATH;$env:ANDROID_HOME\emulator;$env:ANDROID_HOME\platform-tools"
+}
+
+# Environment variables
+$env:FUNCTIONS_CORE_TOOLS_TELEMETRY_OPTOUT = 1

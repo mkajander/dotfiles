@@ -1,0 +1,85 @@
+# 10-tools.ps1
+# Tool configurations (FZF, Bat, Eza, PSReadLine, etc.)
+
+# ---- PSReadLine (Enhanced PowerShell editing experience) -----
+if (Get-Module -ListAvailable -Name PSReadLine) {
+    Import-Module PSReadLine
+    Set-PSReadLineOption -PredictionSource History
+    Set-PSReadLineOption -PredictionViewStyle ListView
+    Set-PSReadLineOption -EditMode Windows
+    Set-PSReadLineKeyHandler -Key Tab -Function MenuComplete
+    Set-PSReadLineKeyHandler -Key UpArrow -Function HistorySearchBackward
+    Set-PSReadLineKeyHandler -Key DownArrow -Function HistorySearchForward
+}
+
+# ---- FZF (Fuzzy Finder) -----
+if (Get-Command fzf -ErrorAction SilentlyContinue) {
+    # FZF color theme
+    $env:FZF_DEFAULT_OPTS = @"
+--color=fg:#CBE0F0,bg:#011628,hl:#B388FF,fg+:#CBE0F0,bg+:#143652,hl+:#B388FF,info:#06BCE4,prompt:#2CF9ED,pointer:#2CF9ED,marker:#2CF9ED,spinner:#2CF9ED,header:#2CF9ED
+"@
+
+    # Use fd instead of default for better performance
+    if (Get-Command fd -ErrorAction SilentlyContinue) {
+        $env:FZF_DEFAULT_COMMAND = 'fd --hidden --strip-cwd-prefix --exclude .git'
+        $env:FZF_CTRL_T_COMMAND = $env:FZF_DEFAULT_COMMAND
+        $env:FZF_ALT_C_COMMAND = 'fd --type=d --hidden --strip-cwd-prefix --exclude .git'
+    }
+
+    # Initialize PSFzf if available
+    if (Get-Module -ListAvailable -Name PSFzf) {
+        Import-Module PSFzf
+        Set-PsFzfOption -PSReadlineChordProvider 'Ctrl+t' -PSReadlineChordReverseHistory 'Ctrl+r'
+    }
+}
+
+# ---- Bat (better cat) -----
+if (Get-Command bat -ErrorAction SilentlyContinue) {
+    $env:BAT_THEME = 'Dracula'
+}
+
+# ---- Eza (better ls) -----
+if (Get-Command eza -ErrorAction SilentlyContinue) {
+    function ls { eza --icons $args }
+    function ll { eza --icons --long --header --git $args }
+    function la { eza --icons --long --header --git --all $args }
+    function lt { eza --icons --tree $args }
+}
+
+# ---- Zoxide (better cd) ----
+if (Get-Command zoxide -ErrorAction SilentlyContinue) {
+    Invoke-Expression (& { (zoxide init powershell | Out-String) })
+    # Override cd with z
+    Set-Alias -Name cd -Value z -Option AllScope -Force
+}
+
+# ---- GitHub CLI ----
+if (Get-Command gh -ErrorAction SilentlyContinue) {
+    # GitHub Copilot aliases
+    function copilot { gh copilot $args }
+    function gcs { gh copilot suggest $args }
+    function gce { gh copilot explain $args }
+}
+
+# ---- Azure CLI ----
+if (Get-Command az -ErrorAction SilentlyContinue) {
+    # Azure CLI completion is automatic in PowerShell
+}
+
+# ---- FNM (Fast Node Manager) for Windows ----
+if (Get-Command fnm -ErrorAction SilentlyContinue) {
+    fnm env --use-on-cd | Out-String | Invoke-Expression
+}
+
+# ---- Terminal Icons ----
+if (Get-Module -ListAvailable -Name Terminal-Icons) {
+    Import-Module Terminal-Icons
+}
+
+# ---- Posh-Git (Git integration) ----
+if (Get-Module -ListAvailable -Name posh-git) {
+    Import-Module posh-git
+}
+
+# ---- Misc Aliases ----
+Set-Alias -Name cls -Value Clear-Host

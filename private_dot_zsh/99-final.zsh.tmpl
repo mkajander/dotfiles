@@ -1,0 +1,14 @@
+# 99-final.zsh.tmpl
+# Final setup, completions, and cleanup
+
+# Docker Desktop completions
+if [ -d "$HOME/.docker/completions" ]; then
+  fpath=($HOME/.docker/completions $fpath)
+fi
+
+# Initialize completion system
+autoload -Uz compinit
+compinit
+
+# envman support (if installed)
+[ -s "$HOME/.config/envman/load.sh" ] && source "$HOME/.config/envman/load.sh"

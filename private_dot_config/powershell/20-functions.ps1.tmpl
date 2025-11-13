@@ -1,0 +1,300 @@
+# 20-functions.ps1
+# Custom PowerShell functions
+
+# Execute command in Kubernetes pod
+function kexec {
+    param(
+        [Parameter(Mandatory=$false)]
+        [Alias('n')]
+        [string]$Namespace,
+        
+        [Parameter(Mandatory=$true, Position=0)]
+        [string]$PodName
+    )
+    
+    if ([string]::IsNullOrEmpty($PodName)) {
+        Write-Host "Usage: kexec [-n namespace] <pod-name>"
+        return
+    }
+    
+    if ($Namespace) {
+        kubectl exec --stdin --tty $PodName -n $Namespace -- /bin/bash
+    } else {
+        kubectl exec --stdin --tty $PodName -- /bin/bash
+    }
+}
+
+# Configure Git to use specific SSH key for current repository
+function gconfig_ssh {
+    param(
+        [Parameter(Mandatory=$true)]
+        [string]$SshKeyPath
+    )
+    
+    if (-not (Test-Path $SshKeyPath)) {
+        Write-Host "Error: SSH key not found at $SshKeyPath"
+        return
+    }
+    
+    # Convert to WSL-style path if needed (for Git Bash compatibility)
+    $escapedPath = $SshKeyPath -replace '\\', '/'
+    git config --add --local core.sshCommand "ssh -i `"$escapedPath`""
+}
+
+# System update function (Windows)
+function sup {
+    Write-Host "🚀 Starting system update for Windows..." -ForegroundColor Green
+    
+    # Update winget packages
+    if (Get-Command winget -ErrorAction SilentlyContinue) {
+        Write-Host "Updating winget packages..." -ForegroundColor Cyan
+        winget upgrade --all
+    }
+    
+    # Update scoop packages if installed
+    if (Get-Command scoop -ErrorAction SilentlyContinue) {
+        Write-Host "Updating scoop packages..." -ForegroundColor Cyan
+        scoop update *
+    }
+    
+    # Update Chocolatey packages if installed
+    if (Get-Command choco -ErrorAction SilentlyContinue) {
+        Write-Host "Updating Chocolatey packages..." -ForegroundColor Cyan
+        choco upgrade all -y
+    }
+    
+    Write-Host "✅ System update process finished." -ForegroundColor Green
+}
+
+# Force sync local branch with remote (with backup)
+function git-remote-truth {
+    param(
+        [switch]$NoClean,
+        [switch]$PushBackup,
+        [string]$Remote = "origin",
+        [switch]$NoBackup,
+        [switch]$ForceUpstream,
+        [switch]$Yes
+    )
+    
+    # Ensure we are in a git repo
+    $isGitRepo = git rev-parse --is-inside-work-tree 2>$null
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "Not inside a git repository."
+        return
+    }
+    
+    # Determine current branch
+    $currentBranch = git rev-parse --abbrev-ref HEAD
+    if ($currentBranch -eq "HEAD" -or [string]::IsNullOrEmpty($currentBranch)) {
+        Write-Host "Detached HEAD; checkout a branch first."
+        return
+    }
+    
+    # Verify remote exists
+    $remoteUrl = git remote get-url $Remote 2>$null
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "Remote '$Remote' not found."
+        return
+    }
+    
+    # Check upstream
+    $upstream = git rev-parse --abbrev-ref "@{upstream}" 2>$null
+    if ($LASTEXITCODE -ne 0) {
+        if ($ForceUpstream) {
+            $remoteBranchExists = git ls-remote --exit-code --heads $Remote $currentBranch 2>$null
+            if ($LASTEXITCODE -eq 0) {
+                Write-Host "Setting upstream to $Remote/$currentBranch"
+                git branch --set-upstream-to "$Remote/$currentBranch" $currentBranch
+            } else {
+                Write-Host "Remote branch $Remote/$currentBranch does not exist."
+                return
+            }
+        } else {
+            Write-Host "No upstream for '$currentBranch'. Use -ForceUpstream or set it manually."
+            return
+        }
+    }
+    
+    $timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
+    $backupBranch = "backup/$currentBranch-$timestamp"
+    
+    # Confirmation
+    if (-not $Yes) {
+        Write-Host "About to force-sync '$currentBranch' to '$Remote/$currentBranch'."
+        Write-Host "Actions:"
+        if (-not $NoBackup) {
+            Write-Host "  - Create backup branch: $backupBranch"
+        } else {
+            Write-Host "  - NO BACKUP (dangerous)"
+        }
+        Write-Host "  - git fetch $Remote"
+        Write-Host "  - git reset --hard $Remote/$currentBranch"
+        if (-not $NoClean) {
+            Write-Host "  - git clean -fdx"
+        } else {
+            Write-Host "  - Skip clean"
+        }
+        
+        $response = Read-Host "Proceed? [y/N]"
+        if ($response -notmatch '^[yY](es)?$') {
+            Write-Host "Aborted."
+            return
+        }
+    }
+    
+    if (-not $NoBackup) {
+        Write-Host "Creating backup branch: $backupBranch"
+        git switch -c $backupBranch
+        
+        Write-Host "Staging all changes (including untracked)"
+        git add -A
+        $hasChanges = git diff --cached --quiet; $staged = $LASTEXITCODE
+        $hasUnstaged = git diff --quiet; $unstaged = $LASTEXITCODE
+        
+        if ($staged -ne 0 -or $unstaged -ne 0) {
+            git commit -m "Backup before remote-truth reset from $currentBranch @ $timestamp"
+        } else {
+            Write-Host "No local changes to commit; backup branch still created."
+        }
+        
+        if ($PushBackup) {
+            Write-Host "Pushing backup branch to $Remote"
+            git push -u $Remote $backupBranch
+        }
+        
+        Write-Host "Switching back to $currentBranch"
+        git switch $currentBranch
+    } else {
+        Write-Host "WARNING: -NoBackup specified. Proceeding without backup."
+    }
+    
+    Write-Host "Fetching from $Remote"
+    git fetch $Remote
+    
+    Write-Host "Hard resetting $currentBranch to $Remote/$currentBranch"
+    git reset --hard "$Remote/$currentBranch"
+    
+    if (-not $NoClean) {
+        Write-Host "Cleaning untracked files and directories"
+        git clean -fdx
+    } else {
+        Write-Host "Skipping clean due to -NoClean"
+    }
+    
+    Write-Host "Done. '$currentBranch' now matches $Remote/$currentBranch"
+}
+
+# Move local commits on main/master (that are not on origin) to a new branch
+function git-oops-main {
+    # Ensure we're in a git repo
+    $isGitRepo = git rev-parse --git-dir 2>$null
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "Not a git repository."
+        return
+    }
+    
+    # Detect current branch
+    $currentBranch = git rev-parse --abbrev-ref HEAD 2>$null
+    if ($LASTEXITCODE -ne 0) {
+        return
+    }
+    
+    if ($currentBranch -ne "main" -and $currentBranch -ne "master") {
+        Write-Host "You are on '$currentBranch'. This helper only operates on 'main' or 'master'."
+        return
+    }
+    
+    # Ensure working tree is clean
+    $status = git status --porcelain
+    if ($status) {
+        Write-Host "Your working tree is not clean. Please stash or commit your changes first."
+        return
+    }
+    
+    # Make sure origin exists
+    $originUrl = git remote get-url origin 2>$null
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "Remote 'origin' not found. Add it with: git remote add origin <url>"
+        return
+    }
+    
+    # Fetch
+    git fetch --no-tags --prune --quiet origin
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "git fetch origin failed. Aborting."
+        return
+    }
+    
+    # Determine corresponding origin branch
+    $originBranch = "origin/$currentBranch"
+    $branchExists = git show-ref --verify --quiet "refs/remotes/$originBranch"
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "Remote branch '$originBranch' not found."
+        Write-Host "Make sure 'origin' exists and fetch: git fetch origin"
+        return
+    }
+    
+    # Calculate how many commits we are ahead
+    $revList = git rev-list --left-right --count "$originBranch...$currentBranch" 2>$null
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "Failed to compute ahead/behind vs $originBranch."
+        return
+    }
+    
+    $behind, $ahead = $revList -split '\s+'
+    if ([int]$ahead -eq 0) {
+        Write-Host "'$currentBranch' is not ahead of $originBranch. Nothing to move."
+        return
+    }
+    
+    # Prompt for new branch name
+    do {
+        $newBranch = Read-Host "Enter new branch name to move $ahead commit(s) to"
+        $newBranch = $newBranch -replace '\s+', '-'
+        
+        if ([string]::IsNullOrWhiteSpace($newBranch)) {
+            Write-Host "Branch name cannot be empty."
+            continue
+        }
+        
+        $checkRef = git check-ref-format --branch $newBranch 2>$null
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host "Invalid branch name. Try a different one."
+            continue
+        }
+        
+        $branchExists = git show-ref --verify --quiet "refs/heads/$newBranch"
+        if ($LASTEXITCODE -eq 0) {
+            Write-Host "Branch '$newBranch' already exists. Choose another."
+            continue
+        }
+        
+        break
+    } while ($true)
+    
+    Write-Host "Creating and switching to '$newBranch' at $currentBranch@HEAD..."
+    git checkout -b $newBranch | Out-Null
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "Failed to create or checkout '$newBranch'."
+        return
+    }
+    
+    # Reset local main/master to match origin
+    Write-Host "Resetting local '$currentBranch' to '$originBranch'..."
+    git branch -f $currentBranch $originBranch
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "Failed to move '$currentBranch' to '$originBranch'."
+        Write-Host "Your commits remain safe on '$newBranch'."
+        Write-Host "You can try manually: git branch -f $currentBranch $originBranch"
+        return
+    }
+    
+    Write-Host "Done."
+    Write-Host "- Moved $ahead commit(s) to '$newBranch'."
+    Write-Host "- Local '$currentBranch' now matches '$originBranch'."
+    Write-Host "Next:"
+    Write-Host "  - Continue work on '$newBranch'"
+    Write-Host "  - Push when ready: git push -u origin $newBranch"
+}
+

@@ -1,0 +1,40 @@
+# .chezmoiignore
+# This file is a Go template. Patterns match *target* paths in $HOME,
+# not source filenames in the repo.
+
+# --- Repo-only stuff (never copy to $HOME) ---
+README.md
+LICENSE
+.git/
+.github/
+.gitignore
+.DS_Store
+README.md
+LICENSE
+
+# --- OS-specific ignores ---
+{{- if eq .chezmoi.os "windows" }}
+
+# Ignore Unix/macOS shell config on Windows
+.zshrc
+.zsh/**
+
+# Ignore Unix-only helper scripts / installers (targets)
+install-packages.sh
+install-fzf-git.sh
+install-nvm.sh
+install-ohmyzsh.sh
+install-zsh-plugins.sh
+
+{{- else }}
+
+# Ignore Windows-specific stuff on macOS/Linux
+Documents/          # if you don't want chezmoi touching ~/Documents at all
+.config/powershell/**
+
+# Windows helper scripts / installers (targets)
+install-packages.ps1
+install-nvm-windows.ps1
+install-ohmyposh.ps1
+
+{{- end }}

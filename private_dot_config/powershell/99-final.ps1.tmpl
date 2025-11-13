@@ -1,0 +1,32 @@
+# 99-final.ps1
+# Final setup, completions, and cleanup
+
+# Docker Desktop completions (if installed)
+if (Test-Path "$HOME\.docker\completions") {
+    # PowerShell Docker completions are handled differently than Zsh
+    # They're typically auto-loaded by Docker Desktop
+}
+
+# Initialize tab completion for various tools
+# Most PowerShell modules auto-register their completions
+
+# Azure CLI completion (if installed)
+if (Get-Command az -ErrorAction SilentlyContinue) {
+    # Azure CLI auto-completion is built into the PowerShell module
+}
+
+# kubectl completion
+if (Get-Command kubectl -ErrorAction SilentlyContinue) {
+    kubectl completion powershell | Out-String | Invoke-Expression
+}
+
+# GitHub CLI completion
+if (Get-Command gh -ErrorAction SilentlyContinue) {
+    # gh completion is automatic in PowerShell
+}
+
+# terraform completion
+if (Get-Command terraform -ErrorAction SilentlyContinue) {
+    # Terraform completion
+    # Note: Terraform completion in PowerShell may require additional setup
+}
