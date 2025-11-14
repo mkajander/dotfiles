@@ -46,17 +46,23 @@ foreach ($package in $packages) {
 
     # Check if already installed
     $installed = winget list --id $package --exact 2>$null
-    if ($LASTEXITCODE -eq 0 -and $installed -match $package) {
-        Write-Host "  ✓ Already installed, skipping..." -ForegroundColor Gray
-        continue
+    $isInstalled = $false
+    if ($LASTEXITCODE -eq 0) {
+        if ($installed -match $package) {
+            $isInstalled = $true
+        }
     }
 
-    # Install the package
-    winget install --id $package --exact --source winget --accept-source-agreements --accept-package-agreements
-    if ($LASTEXITCODE -eq 0) {
-        Write-Host "  ✓ Successfully installed $package" -ForegroundColor Green
+    if ($isInstalled) {
+        Write-Host "  ✓ Already installed, skipping..." -ForegroundColor Gray
     } else {
-        Write-Host "  ⚠️  Warning: Failed to install $package (exit code: $LASTEXITCODE), continuing..." -ForegroundColor Yellow
+        # Install the package
+        winget install --id $package --exact --source winget --accept-source-agreements --accept-package-agreements
+        if ($LASTEXITCODE -eq 0) {
+            Write-Host "  ✓ Successfully installed $package" -ForegroundColor Green
+        } else {
+            Write-Host "  ⚠️  Warning: Failed to install $package (exit code: $LASTEXITCODE), continuing..." -ForegroundColor Yellow
+        }
     }
 }
 
