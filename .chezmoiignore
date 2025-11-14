@@ -21,10 +21,6 @@ LICENSE
 
 # Ignore Unix-only helper scripts / installers (targets)
 install-packages.sh
-install-fzf-git.sh
-install-nvm.sh
-install-ohmyzsh.sh
-install-zsh-plugins.sh
 
 {{- else }}
 
@@ -34,6 +30,5 @@ Documents/          # if you don't want chezmoi touching ~/Documents at all
 
 # Windows helper scripts / installers (targets)
 install-packages.ps1
-install-nvm-windows.ps1
 
 {{- end }}
