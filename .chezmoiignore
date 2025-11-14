@@ -30,5 +30,6 @@ Documents/          # if you don't want chezmoi touching ~/Documents at all
 
 # Windows helper scripts / installers (targets)
 install-packages.ps1
+scoop-packages.ps1
 
 {{- end }}

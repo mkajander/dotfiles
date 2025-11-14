@@ -1,103 +1,101 @@
-#Requires -RunAsAdministrator
 # run_once_before_install-packages.ps1.tmpl
-# This script installs all required packages and dependencies on Windows
+# This script installs all required packages and dependencies on Windows.
 
-# Don't exit on error - allow partial installation to succeed
 $ErrorActionPreference = "Continue"
 
-Write-Host "🚀 Installing dependencies for Windows..." -ForegroundColor Cyan
+Write-Host "Installing dependencies for Windows..." -ForegroundColor Cyan
 Write-Host ""
 
 # Check if winget is available
 if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
-    Write-Host "❌ winget is not available. Please install App Installer from the Microsoft Store or update Windows." -ForegroundColor Red
-    Write-Host "   Falling back to manual installation instructions..." -ForegroundColor Yellow
+    Write-Host "winget is not available. Please install App Installer from the Microsoft Store or update Windows." -ForegroundColor Red
     Write-Host ""
-    Write-Host "Please install the following tools manually:" -ForegroundColor Yellow
-    Write-Host "  - Git: https://git-scm.com/download/win" -ForegroundColor Yellow
-    Write-Host "  - PowerShell 7+: https://aka.ms/powershell" -ForegroundColor Yellow
-    Write-Host "  - Windows Terminal: https://aka.ms/terminal" -ForegroundColor Yellow
+    Write-Host "Install these tools manually:" -ForegroundColor Yellow
+    Write-Host "  - Git: https://git-scm.com/download/win"
+    Write-Host "  - PowerShell 7+: https://aka.ms/powershell"
+    Write-Host "  - Windows Terminal: https://aka.ms/terminal"
     exit 1
 }
 
-Write-Host "📦 Installing packages with winget..." -ForegroundColor Cyan
+Write-Host "Installing packages with winget..." -ForegroundColor Cyan
 
 # Essential tools
 $packages = @(
-    "Git.Git",                          # Git
-    "Microsoft.PowerShell",             # PowerShell 7+
-    "Microsoft.WindowsTerminal",        # Windows Terminal
-    "Starship.Starship",                # Starship (prompt theme)
-    "GitHub.cli",                       # GitHub CLI
-    "eza-community.eza",                # Modern ls replacement
-    "sharkdp.bat",                      # Cat with syntax highlighting
-    "sharkdp.fd",                       # Fast find alternative
-    "junegunn.fzf",                     # Fuzzy finder
-    "ajeetdsouza.zoxide",               # Smarter cd
-    "jesseduffield.lazygit",            # Terminal UI for git
-    "jesseduffield.lazydocker",         # Terminal UI for docker
-    "HashiCorp.Terraform",              # Infrastructure as Code
-    "Microsoft.AzureCLI",               # Azure CLI
-    "Schniz.fnm"                        # Fast Node Manager
+    "Git.Git"                    # Git
+    "Microsoft.PowerShell"       # PowerShell 7+
+    "Microsoft.WindowsTerminal"  # Windows Terminal
+    "Starship.Starship"          # Starship prompt
+    "GitHub.cli"                 # GitHub CLI
+    "eza-community.eza"          # Modern ls replacement
+    "sharkdp.bat"                # bat (cat with syntax highlighting)
+    "sharkdp.fd"                 # fd (fast find)
+    "junegunn.fzf"               # fzf
+    "ajeetdsouza.zoxide"         # zoxide (smarter cd)
+    "JesseDuffield.lazygit"      # lazygit
+    "Microsoft.AzureCLI"         # Azure CLI
+    "Schniz.fnm"                 # Fast Node Manager
 )
 
 foreach ($package in $packages) {
     Write-Host "Installing $package..." -ForegroundColor Green
 
     # Check if already installed
-    $installed = winget list --id $package --exact 2>$null
-    $isInstalled = $false
+    $null = winget list --id $package --exact 2>$null
+
     if ($LASTEXITCODE -eq 0) {
-        if ($installed -match $package) {
-            $isInstalled = $true
-        }
+        Write-Host "  Already installed, skipping..." -ForegroundColor Gray
+        continue
     }
 
-    if ($isInstalled) {
-        Write-Host "  ✓ Already installed, skipping..." -ForegroundColor Gray
+    # Install the package
+    winget install --id $package --exact --source winget `
+        --accept-source-agreements --accept-package-agreements
+
+    if ($LASTEXITCODE -eq 0) {
+        Write-Host "  Successfully installed $package" -ForegroundColor Green
     } else {
-        # Install the package
-        winget install --id $package --exact --source winget --accept-source-agreements --accept-package-agreements
-        if ($LASTEXITCODE -eq 0) {
-            Write-Host "  ✓ Successfully installed $package" -ForegroundColor Green
-        } else {
-            Write-Host "  ⚠️  Warning: Failed to install $package (exit code: $LASTEXITCODE), continuing..." -ForegroundColor Yellow
-        }
+        Write-Host "  Failed to install $package (exit code $LASTEXITCODE), continuing..." -ForegroundColor Yellow
     }
 }
 
 Write-Host ""
-Write-Host "📦 Configuring PowerShell modules..." -ForegroundColor Cyan
+Write-Host "Configuring PowerShell modules..." -ForegroundColor Cyan
 
-# Trust PSGallery to avoid interactive prompts (optional)
+# Configure PSGallery
 try {
-    $psGallery = Get-PSRepository -Name 'PSGallery' -ErrorAction Stop
-    if ($psGallery.InstallationPolicy -ne 'Trusted') {
-        Set-PSRepository -Name 'PSGallery' -InstallationPolicy Trusted
+    $psGallery = Get-PSRepository -Name "PSGallery" -ErrorAction Stop
+    if ($psGallery.InstallationPolicy -ne "Trusted") {
+        Set-PSRepository -Name "PSGallery" -InstallationPolicy Trusted
     }
 } catch {
-    Write-Host "⚠️  Could not configure PSGallery repository, continuing..." -ForegroundColor Yellow
+    Write-Host "Could not configure PSGallery repository, continuing..." -ForegroundColor Yellow
 }
 
 # Install PowerShell modules
-$modules = @('PSReadLine', 'PSFzf', 'posh-git', 'Terminal-Icons')
+$modules = @(
+    "PSReadLine"
+    "PSFzf"
+    "posh-git"
+    "Terminal-Icons"
+)
 
 foreach ($module in $modules) {
     if (Get-Module -ListAvailable -Name $module) {
-        Write-Host "  ✓ Module $module already installed, skipping..." -ForegroundColor Gray
-    } else {
-        Write-Host "Installing PowerShell module: $module..." -ForegroundColor Green
-        try {
-            Install-Module -Name $module -Scope CurrentUser -Force -SkipPublisherCheck -AllowClobber -ErrorAction Stop
-            Write-Host "  ✓ Successfully installed $module" -ForegroundColor Green
-        } catch {
-            Write-Host "  ⚠️  Warning: Failed to install $module - $($_.Exception.Message)" -ForegroundColor Yellow
-        }
+        Write-Host "  Module $module already installed, skipping..." -ForegroundColor Gray
+        continue
+    }
+
+    Write-Host "Installing PowerShell module: $module..." -ForegroundColor Green
+    try {
+        Install-Module -Name $module -Scope CurrentUser `
+            -Force -SkipPublisherCheck -AllowClobber -ErrorAction Stop
+        Write-Host "  Successfully installed $module" -ForegroundColor Green
+    } catch {
+        Write-Host "  Failed to install ${module}: $($_.Exception.Message)" -ForegroundColor Yellow
     }
 }
 
 Write-Host ""
-Write-Host "✅ Package installation complete!" -ForegroundColor Green
-Write-Host ""
-Write-Host "⚠️  Note: You may need to restart your terminal for all changes to take effect." -ForegroundColor Yellow
+Write-Host "Package installation complete." -ForegroundColor Green
+Write-Host "You may need to restart your terminal for all changes to take effect." -ForegroundColor Yellow
 exit 0
