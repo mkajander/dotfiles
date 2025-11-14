@@ -30,9 +30,6 @@ if (-not $scoopCmd) {
     Write-Host "Scoop is not installed. Installing Scoop for the current user..." -ForegroundColor Yellow
 
     try {
-        # Allow the install script to run in this process
-        Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
-
         Invoke-Expression (Invoke-WebRequest -UseBasicParsing -Uri 'https://get.scoop.sh').Content
 
         $scoopCmd = Get-Command scoop -ErrorAction SilentlyContinue
