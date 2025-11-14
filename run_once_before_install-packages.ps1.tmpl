@@ -27,7 +27,7 @@ $packages = @(
     "Git.Git",                          # Git
     "Microsoft.PowerShell",             # PowerShell 7+
     "Microsoft.WindowsTerminal",        # Windows Terminal
-    "JanDeDobbeleer.OhMyPosh",          # Oh My Posh (prompt theme)
+    "Starship.Starship",                # Starship (prompt theme)
     "GitHub.cli",                       # GitHub CLI
     "eza-community.eza",                # Modern ls replacement
     "sharkdp.bat",                      # Cat with syntax highlighting
@@ -43,9 +43,20 @@ $packages = @(
 
 foreach ($package in $packages) {
     Write-Host "Installing $package..." -ForegroundColor Green
-    winget install --id $package --exact --source winget --silent --accept-source-agreements --accept-package-agreements 2>$null
-    if ($LASTEXITCODE -ne 0) {
-        Write-Host "⚠️  Warning: Failed to install $package, continuing..." -ForegroundColor Yellow
+
+    # Check if already installed
+    $installed = winget list --id $package --exact 2>$null
+    if ($LASTEXITCODE -eq 0 -and $installed -match $package) {
+        Write-Host "  ✓ Already installed, skipping..." -ForegroundColor Gray
+        continue
+    }
+
+    # Install the package
+    winget install --id $package --exact --source winget --accept-source-agreements --accept-package-agreements
+    if ($LASTEXITCODE -eq 0) {
+        Write-Host "  ✓ Successfully installed $package" -ForegroundColor Green
+    } else {
+        Write-Host "  ⚠️  Warning: Failed to install $package (exit code: $LASTEXITCODE), continuing..." -ForegroundColor Yellow
     }
 }
 
@@ -62,24 +73,21 @@ try {
     Write-Host "⚠️  Could not configure PSGallery repository, continuing..." -ForegroundColor Yellow
 }
 
-# Install PSReadLine module (enhanced command line editing)
-if (-not (Get-Module -ListAvailable -Name PSReadLine)) {
-    Install-Module -Name PSReadLine -Scope CurrentUser -Force -SkipPublisherCheck -AllowClobber
-}
+# Install PowerShell modules
+$modules = @('PSReadLine', 'PSFzf', 'posh-git', 'Terminal-Icons')
 
-# Install PSFzf module (FZF integration for PowerShell)
-if (-not (Get-Module -ListAvailable -Name PSFzf)) {
-    Install-Module -Name PSFzf -Scope CurrentUser -Force -SkipPublisherCheck -AllowClobber
-}
-
-# Install posh-git module (Git integration for PowerShell)
-if (-not (Get-Module -ListAvailable -Name posh-git)) {
-    Install-Module -Name posh-git -Scope CurrentUser -Force -SkipPublisherCheck -AllowClobber
-}
-
-# Install Terminal-Icons module (file icons in terminal)
-if (-not (Get-Module -ListAvailable -Name Terminal-Icons)) {
-    Install-Module -Name Terminal-Icons -Scope CurrentUser -Force -SkipPublisherCheck -AllowClobber
+foreach ($module in $modules) {
+    if (Get-Module -ListAvailable -Name $module) {
+        Write-Host "  ✓ Module $module already installed, skipping..." -ForegroundColor Gray
+    } else {
+        Write-Host "Installing PowerShell module: $module..." -ForegroundColor Green
+        try {
+            Install-Module -Name $module -Scope CurrentUser -Force -SkipPublisherCheck -AllowClobber -ErrorAction Stop
+            Write-Host "  ✓ Successfully installed $module" -ForegroundColor Green
+        } catch {
+            Write-Host "  ⚠️  Warning: Failed to install $module - $($_.Exception.Message)" -ForegroundColor Yellow
+        }
+    }
 }
 
 Write-Host ""

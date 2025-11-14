@@ -35,6 +35,5 @@ Documents/          # if you don't want chezmoi touching ~/Documents at all
 # Windows helper scripts / installers (targets)
 install-packages.ps1
 install-nvm-windows.ps1
-install-ohmyposh.ps1
 
 {{- end }}

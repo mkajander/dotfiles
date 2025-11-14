@@ -6,8 +6,6 @@ Write-Host "Loading profile: $PSCommandPath" -ForegroundColor Cyan
 # Load initial setup (PATH, exports, Starship)
 if (Test-Path "$HOME/.config/powershell/00-init.ps1") {
     . "$HOME/.config/powershell/00-init.ps1"
-} else {
-    Write-Host "00-init.ps1 not found. Skipping..." -ForegroundColor Yellow
 }
 
 # Load tool configurations (FZF, Bat, Eza, etc.)
@@ -16,17 +14,16 @@ if (Test-Path "$HOME/.config/powershell/10-tools.ps1") {
 }
 
 # Load custom functions
-if (Test-Path "$HOME/.config/powershell/20-functions.ps1") {
-    . "$HOME/.config/powershell/20-functions.ps1"
-}
+#if (Test-Path "$HOME/.config/powershell/20-functions.ps1") {
+#    . "$HOME/.config/powershell/20-functions.ps1"
+#}
 
 # Load OS-specific configurations
-if (Test-Path "$HOME/.config/powershell/30-os-specific.ps1") {
-    . "$HOME/.config/powershell/30-os-specific.ps1"
-}
+#if (Test-Path "$HOME/.config/powershell/30-os-specific.ps1") {
+#    . "$HOME/.config/powershell/30-os-specific.ps1"
+#}
 
 # Load final setup and completions
-if (Test-Path "$HOME/.config/powershell/99-final.ps1") {
-    . "$HOME/.config/powershell/99-final.ps1"
-}
-
+#if (Test-Path "$HOME/.config/powershell/99-final.ps1") {
+#    . "$HOME/.config/powershell/99-final.ps1"
+#}
