@@ -1,0 +1,195 @@
+{{- if eq .chezmoi.os "windows" -}}
+# Starship configuration inspired by the Powerlevel10k aesthetic.
+# This prompt is only installed on Windows hosts via chezmoi templating.
+
+add_newline = false
+command_timeout = 1000
+scan_timeout = 10
+palette = "powerlevel10k"
+continuation_prompt = "[╰─▶ ](fg:p10k_muted)"
+
+format = """
+[╭╴](fg:p10k_dim)\
+$os\
+$username\
+$hostname\
+$directory\
+$git_branch\
+$git_commit\
+$git_state\
+$git_status\
+$package\
+$nodejs\
+$python\
+$rust\
+$golang\
+$java\
+$dotnet\
+$aws\
+$azure\
+$kubernetes\
+$docker_context\
+$cmd_duration\
+$status\
+$jobs\
+$line_break\
+[╰─>](fg:p10k_dim)\
+$character"""
+
+right_format = """
+$time\
+$battery\
+"""
+
+[palettes.powerlevel10k]
+p10k_bg0 = "#303446"
+p10k_bg1 = "#414559"
+p10k_accent = "#8caaee"
+p10k_warn = "#ef9f76"
+p10k_error = "#e78284"
+p10k_success = "#a6d189"
+p10k_muted = "#737994"
+p10k_dim = "#626880"
+p10k_fg = "#f2d5cf"
+
+[os]
+disabled = false
+style = "bg:p10k_bg0 fg:p10k_fg"
+format = "[ $symbol ]($style)"
+symbols.Windows = ""
+
+[username]
+show_always = true
+style_root = "bg:p10k_bg0 fg:p10k_error"
+style_user = "bg:p10k_bg0 fg:p10k_fg"
+format = "[ $user ]($style)"
+
+[hostname]
+disabled = false
+ssh_only = false
+style = "bg:p10k_bg0 fg:p10k_accent"
+format = "[ $hostname ]($style)"
+
+[directory]
+style = "bg:p10k_bg1 fg:p10k_fg"
+format = "[ $path ]($style)"
+truncation_length = 3
+truncate_to_repo = true
+home_symbol = ""
+read_only_style = "bg:p10k_bg1 fg:p10k_warn"
+read_only = " "
+
+[git_branch]
+style = "bg:p10k_bg0 fg:p10k_accent"
+format = "[  $branch ]($style)"
+truncation_length = 25
+
+[git_commit]
+style = "bg:p10k_bg0 fg:p10k_muted"
+format = "[ ﲊ $hash ]($style)"
+commit_hash_length = 7
+only_detached = false
+
+[git_state]
+style = "bg:p10k_bg0 fg:p10k_warn"
+format = "[ $state( $progress_current/$progress_total) ]($style)"
+
+[git_status]
+style = "bg:p10k_bg0 fg:p10k_success"
+format = "[ $all_status$ahead_behind ]($style)"
+disabled = false
+
+[nodejs]
+style = "bg:p10k_bg1 fg:p10k_fg"
+format = "[  $version ]($style)"
+disabled = false
+
+[python]
+style = "bg:p10k_bg1 fg:p10k_fg"
+format = "[  $version$virtualenv ]($style)"
+python_binary = ["python", "python3"]
+disabled = false
+
+[rust]
+style = "bg:p10k_bg1 fg:p10k_fg"
+format = "[  $version ]($style)"
+disabled = false
+
+[golang]
+style = "bg:p10k_bg1 fg:p10k_fg"
+format = "[  $version ]($style)"
+disabled = false
+
+[java]
+style = "bg:p10k_bg1 fg:p10k_fg"
+format = "[  $version ]($style)"
+disabled = false
+
+[dotnet]
+style = "bg:p10k_bg1 fg:p10k_fg"
+format = "[  $version( $tfm) ]($style)"
+heuristic = true
+disabled = false
+
+[package]
+style = "bg:p10k_bg1 fg:p10k_muted"
+format = "[  $version ]($style)"
+
+[aws]
+style = "bg:p10k_bg0 fg:p10k_warn"
+format = "[  $profile( $region) ]($style)"
+disabled = false
+
+[azure]
+style = "bg:p10k_bg0 fg:p10k_warn"
+format = "[  $subscription ]($style)"
+disabled = false
+
+[kubernetes]
+style = "bg:p10k_bg0 fg:p10k_warn"
+format = "[ ⎈ $context( $namespace) ]($style)"
+disabled = false
+
+[docker_context]
+style = "bg:p10k_bg0 fg:p10k_accent"
+format = "[  $context ]($style)"
+disabled = false
+
+[cmd_duration]
+style = "bg:p10k_bg1 fg:p10k_accent"
+format = "[  $duration ]($style)"
+min_time = 500
+
+[status]
+style = "bg:p10k_bg0 fg:p10k_error"
+format = "[ ✘ $status ]($style)"
+disabled = false
+
+[jobs]
+style = "bg:p10k_bg0 fg:p10k_accent"
+format = "[ 省 $number ]($style)"
+number_threshold = 1
+
+[time]
+disabled = false
+format = "[  $time ](fg:p10k_muted)"
+time_format = "%H:%M:%S"
+
+[battery]
+disabled = false
+format = "[ $symbol$percentage ](fg:p10k_muted)"
+full_symbol = " "
+charging_symbol = " "
+discharging_symbol = " "
+empty_symbol = " "
+unknown_symbol = " "
+
+[character]
+success_symbol = "[❯](fg:p10k_success)"
+error_symbol = "[❯](fg:p10k_error)"
+vimcmd_symbol = "[❮](fg:p10k_accent)"
+vimcmd_replace_symbol = "[❮](fg:p10k_warn)"
+vimcmd_replace_one_symbol = "[❮](fg:p10k_warn)"
+vimcmd_visual_symbol = "[❮](fg:p10k_accent)"
+use_symbol_for_status = true
+{{- end -}}

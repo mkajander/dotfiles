@@ -27,6 +27,7 @@ install-packages.sh
 # Ignore Windows-specific stuff on macOS/Linux
 Documents/          # if you don't want chezmoi touching ~/Documents at all
 .config/powershell/**
+.config/starship.toml
 
 # Windows helper scripts / installers (targets)
 install-packages.ps1
