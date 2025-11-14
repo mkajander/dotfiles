@@ -1,195 +1,279 @@
-{{- if eq .chezmoi.os "windows" -}}
-# Starship configuration inspired by the Powerlevel10k aesthetic.
-# This prompt is only installed on Windows hosts via chezmoi templating.
-
-add_newline = false
-command_timeout = 1000
-scan_timeout = 10
-palette = "powerlevel10k"
-continuation_prompt = "[╰─▶ ](fg:p10k_muted)"
+"$schema" = 'https://starship.rs/config-schema.json'
 
 format = """
-[╭╴](fg:p10k_dim)\
+[](red)\
 $os\
 $username\
-$hostname\
+[](bg:peach fg:red)\
 $directory\
+[](bg:yellow fg:peach)\
 $git_branch\
-$git_commit\
-$git_state\
 $git_status\
-$package\
-$nodejs\
-$python\
+[](fg:yellow bg:green)\
+$c\
 $rust\
 $golang\
+$nodejs\
+$php\
 $java\
-$dotnet\
-$aws\
-$azure\
-$kubernetes\
-$docker_context\
+$kotlin\
+$haskell\
+$python\
+[](fg:green bg:sapphire)\
+$conda\
+[](fg:sapphire bg:lavender)\
+$time\
+[ ](fg:lavender)\
 $cmd_duration\
-$status\
-$jobs\
 $line_break\
-[╰─>](fg:p10k_dim)\
 $character"""
 
-right_format = """
-$time\
-$battery\
-"""
-
-[palettes.powerlevel10k]
-p10k_bg0 = "#303446"
-p10k_bg1 = "#414559"
-p10k_accent = "#8caaee"
-p10k_warn = "#ef9f76"
-p10k_error = "#e78284"
-p10k_success = "#a6d189"
-p10k_muted = "#737994"
-p10k_dim = "#626880"
-p10k_fg = "#f2d5cf"
+palette = 'catppuccin_mocha'
 
 [os]
 disabled = false
-style = "bg:p10k_bg0 fg:p10k_fg"
-format = "[ $symbol ]($style)"
-symbols.Windows = ""
+style = "bg:red fg:crust"
+
+[os.symbols]
+Windows = ""
+Ubuntu = "󰕈"
+SUSE = ""
+Raspbian = "󰐿"
+Mint = "󰣭"
+Macos = "󰀵"
+Manjaro = ""
+Linux = "󰌽"
+Gentoo = "󰣨"
+Fedora = "󰣛"
+Alpine = ""
+Amazon = ""
+Android = ""
+AOSC = ""
+Arch = "󰣇"
+Artix = "󰣇"
+CentOS = ""
+Debian = "󰣚"
+Redhat = "󱄛"
+RedHatEnterprise = "󱄛"
 
 [username]
 show_always = true
-style_root = "bg:p10k_bg0 fg:p10k_error"
-style_user = "bg:p10k_bg0 fg:p10k_fg"
-format = "[ $user ]($style)"
-
-[hostname]
-disabled = false
-ssh_only = false
-style = "bg:p10k_bg0 fg:p10k_accent"
-format = "[ $hostname ]($style)"
+style_user = "bg:red fg:crust"
+style_root = "bg:red fg:crust"
+format = '[ $user]($style)'
 
 [directory]
-style = "bg:p10k_bg1 fg:p10k_fg"
+style = "bg:peach fg:crust"
 format = "[ $path ]($style)"
 truncation_length = 3
-truncate_to_repo = true
-home_symbol = ""
-read_only_style = "bg:p10k_bg1 fg:p10k_warn"
-read_only = " "
+truncation_symbol = "…/"
+
+[directory.substitutions]
+"Documents" = "󰈙 "
+"Downloads" = " "
+"Music" = "󰝚 "
+"Pictures" = " "
+"Developer" = "󰲋 "
 
 [git_branch]
-style = "bg:p10k_bg0 fg:p10k_accent"
-format = "[  $branch ]($style)"
-truncation_length = 25
-
-[git_commit]
-style = "bg:p10k_bg0 fg:p10k_muted"
-format = "[ ﲊ $hash ]($style)"
-commit_hash_length = 7
-only_detached = false
-
-[git_state]
-style = "bg:p10k_bg0 fg:p10k_warn"
-format = "[ $state( $progress_current/$progress_total) ]($style)"
+symbol = ""
+style = "bg:yellow"
+format = '[[ $symbol $branch ](fg:crust bg:yellow)]($style)'
 
 [git_status]
-style = "bg:p10k_bg0 fg:p10k_success"
-format = "[ $all_status$ahead_behind ]($style)"
-disabled = false
+style = "bg:yellow"
+format = '[[($all_status$ahead_behind )](fg:crust bg:yellow)]($style)'
 
 [nodejs]
-style = "bg:p10k_bg1 fg:p10k_fg"
-format = "[  $version ]($style)"
-disabled = false
+symbol = ""
+style = "bg:green"
+format = '[[ $symbol( $version) ](fg:crust bg:green)]($style)'
 
-[python]
-style = "bg:p10k_bg1 fg:p10k_fg"
-format = "[  $version$virtualenv ]($style)"
-python_binary = ["python", "python3"]
-disabled = false
+[c]
+symbol = " "
+style = "bg:green"
+format = '[[ $symbol( $version) ](fg:crust bg:green)]($style)'
 
 [rust]
-style = "bg:p10k_bg1 fg:p10k_fg"
-format = "[  $version ]($style)"
-disabled = false
+symbol = ""
+style = "bg:green"
+format = '[[ $symbol( $version) ](fg:crust bg:green)]($style)'
 
 [golang]
-style = "bg:p10k_bg1 fg:p10k_fg"
-format = "[  $version ]($style)"
-disabled = false
+symbol = ""
+style = "bg:green"
+format = '[[ $symbol( $version) ](fg:crust bg:green)]($style)'
+
+[php]
+symbol = ""
+style = "bg:green"
+format = '[[ $symbol( $version) ](fg:crust bg:green)]($style)'
 
 [java]
-style = "bg:p10k_bg1 fg:p10k_fg"
-format = "[  $version ]($style)"
-disabled = false
+symbol = " "
+style = "bg:green"
+format = '[[ $symbol( $version) ](fg:crust bg:green)]($style)'
 
-[dotnet]
-style = "bg:p10k_bg1 fg:p10k_fg"
-format = "[  $version( $tfm) ]($style)"
-heuristic = true
-disabled = false
+[kotlin]
+symbol = ""
+style = "bg:green"
+format = '[[ $symbol( $version) ](fg:crust bg:green)]($style)'
 
-[package]
-style = "bg:p10k_bg1 fg:p10k_muted"
-format = "[  $version ]($style)"
+[haskell]
+symbol = ""
+style = "bg:green"
+format = '[[ $symbol( $version) ](fg:crust bg:green)]($style)'
 
-[aws]
-style = "bg:p10k_bg0 fg:p10k_warn"
-format = "[  $profile( $region) ]($style)"
-disabled = false
-
-[azure]
-style = "bg:p10k_bg0 fg:p10k_warn"
-format = "[  $subscription ]($style)"
-disabled = false
-
-[kubernetes]
-style = "bg:p10k_bg0 fg:p10k_warn"
-format = "[ ⎈ $context( $namespace) ]($style)"
-disabled = false
+[python]
+symbol = ""
+style = "bg:green"
+format = '[[ $symbol( $version)(\(#$virtualenv\)) ](fg:crust bg:green)]($style)'
 
 [docker_context]
-style = "bg:p10k_bg0 fg:p10k_accent"
-format = "[  $context ]($style)"
-disabled = false
+symbol = ""
+style = "bg:sapphire"
+format = '[[ $symbol( $context) ](fg:crust bg:sapphire)]($style)'
 
-[cmd_duration]
-style = "bg:p10k_bg1 fg:p10k_accent"
-format = "[  $duration ]($style)"
-min_time = 500
-
-[status]
-style = "bg:p10k_bg0 fg:p10k_error"
-format = "[ ✘ $status ]($style)"
-disabled = false
-
-[jobs]
-style = "bg:p10k_bg0 fg:p10k_accent"
-format = "[ 省 $number ]($style)"
-number_threshold = 1
+[conda]
+symbol = "  "
+style = "fg:crust bg:sapphire"
+format = '[$symbol$environment ]($style)'
+ignore_base = false
 
 [time]
 disabled = false
-format = "[  $time ](fg:p10k_muted)"
-time_format = "%H:%M:%S"
+time_format = "%R"
+style = "bg:lavender"
+format = '[[  $time ](fg:crust bg:lavender)]($style)'
 
-[battery]
-disabled = false
-format = "[ $symbol$percentage ](fg:p10k_muted)"
-full_symbol = " "
-charging_symbol = " "
-discharging_symbol = " "
-empty_symbol = " "
-unknown_symbol = " "
+[line_break]
+disabled = true
 
 [character]
-success_symbol = "[❯](fg:p10k_success)"
-error_symbol = "[❯](fg:p10k_error)"
-vimcmd_symbol = "[❮](fg:p10k_accent)"
-vimcmd_replace_symbol = "[❮](fg:p10k_warn)"
-vimcmd_replace_one_symbol = "[❮](fg:p10k_warn)"
-vimcmd_visual_symbol = "[❮](fg:p10k_accent)"
-use_symbol_for_status = true
-{{- end -}}
+disabled = false
+success_symbol = '[❯](bold fg:green)'
+error_symbol = '[❯](bold fg:red)'
+vimcmd_symbol = '[❮](bold fg:green)'
+vimcmd_replace_one_symbol = '[❮](bold fg:lavender)'
+vimcmd_replace_symbol = '[❮](bold fg:lavender)'
+vimcmd_visual_symbol = '[❮](bold fg:yellow)'
+
+[cmd_duration]
+show_milliseconds = true
+format = " in $duration "
+style = "bg:lavender"
+disabled = false
+show_notifications = true
+min_time_to_notify = 45000
+
+[palettes.catppuccin_mocha]
+rosewater = "#f5e0dc"
+flamingo = "#f2cdcd"
+pink = "#f5c2e7"
+mauve = "#cba6f7"
+red = "#f38ba8"
+maroon = "#eba0ac"
+peach = "#fab387"
+yellow = "#f9e2af"
+green = "#a6e3a1"
+teal = "#94e2d5"
+sky = "#89dceb"
+sapphire = "#74c7ec"
+blue = "#89b4fa"
+lavender = "#b4befe"
+text = "#cdd6f4"
+subtext1 = "#bac2de"
+subtext0 = "#a6adc8"
+overlay2 = "#9399b2"
+overlay1 = "#7f849c"
+overlay0 = "#6c7086"
+surface2 = "#585b70"
+surface1 = "#45475a"
+surface0 = "#313244"
+base = "#1e1e2e"
+mantle = "#181825"
+crust = "#11111b"
+
+[palettes.catppuccin_frappe]
+rosewater = "#f2d5cf"
+flamingo = "#eebebe"
+pink = "#f4b8e4"
+mauve = "#ca9ee6"
+red = "#e78284"
+maroon = "#ea999c"
+peach = "#ef9f76"
+yellow = "#e5c890"
+green = "#a6d189"
+teal = "#81c8be"
+sky = "#99d1db"
+sapphire = "#85c1dc"
+blue = "#8caaee"
+lavender = "#babbf1"
+text = "#c6d0f5"
+subtext1 = "#b5bfe2"
+subtext0 = "#a5adce"
+overlay2 = "#949cbb"
+overlay1 = "#838ba7"
+overlay0 = "#737994"
+surface2 = "#626880"
+surface1 = "#51576d"
+surface0 = "#414559"
+base = "#303446"
+mantle = "#292c3c"
+crust = "#232634"
+
+[palettes.catppuccin_latte]
+rosewater = "#dc8a78"
+flamingo = "#dd7878"
+pink = "#ea76cb"
+mauve = "#8839ef"
+red = "#d20f39"
+maroon = "#e64553"
+peach = "#fe640b"
+yellow = "#df8e1d"
+green = "#40a02b"
+teal = "#179299"
+sky = "#04a5e5"
+sapphire = "#209fb5"
+blue = "#1e66f5"
+lavender = "#7287fd"
+text = "#4c4f69"
+subtext1 = "#5c5f77"
+subtext0 = "#6c6f85"
+overlay2 = "#7c7f93"
+overlay1 = "#8c8fa1"
+overlay0 = "#9ca0b0"
+surface2 = "#acb0be"
+surface1 = "#bcc0cc"
+surface0 = "#ccd0da"
+base = "#eff1f5"
+mantle = "#e6e9ef"
+crust = "#dce0e8"
+
+[palettes.catppuccin_macchiato]
+rosewater = "#f4dbd6"
+flamingo = "#f0c6c6"
+pink = "#f5bde6"
+mauve = "#c6a0f6"
+red = "#ed8796"
+maroon = "#ee99a0"
+peach = "#f5a97f"
+yellow = "#eed49f"
+green = "#a6da95"
+teal = "#8bd5ca"
+sky = "#91d7e3"
+sapphire = "#7dc4e4"
+blue = "#8aadf4"
+lavender = "#b7bdf8"
+text = "#cad3f5"
+subtext1 = "#b8c0e0"
+subtext0 = "#a5adcb"
+overlay2 = "#939ab7"
+overlay1 = "#8087a2"
+overlay0 = "#6e738d"
+surface2 = "#5b6078"
+surface1 = "#494d64"
+surface0 = "#363a4f"
+base = "#24273a"
+mantle = "#1e2030"
+crust = "#181926"

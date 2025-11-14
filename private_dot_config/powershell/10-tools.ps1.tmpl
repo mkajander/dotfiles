@@ -46,13 +46,6 @@ if (Get-Command eza -ErrorAction SilentlyContinue) {
     function lt { eza --icons --tree $args }
 }
 
-# ---- Zoxide (better cd) ----
-if (Get-Command zoxide -ErrorAction SilentlyContinue) {
-    Invoke-Expression (& { (zoxide init powershell | Out-String) })
-    # Override cd with z
-    Set-Alias -Name cd -Value z -Option AllScope -Force
-}
-
 # ---- GitHub CLI ----
 if (Get-Command gh -ErrorAction SilentlyContinue) {
     # GitHub Copilot aliases
@@ -67,8 +60,15 @@ if (Get-Command az -ErrorAction SilentlyContinue) {
 }
 
 # ---- FNM (Fast Node Manager) for Windows ----
+# Initialize FNM first, then override with zoxide
 if (Get-Command fnm -ErrorAction SilentlyContinue) {
     fnm env --use-on-cd | Out-String | Invoke-Expression
+}
+
+# ---- Zoxide (better cd) ----
+# Must be initialized AFTER FNM to override the cd alias
+if (Get-Command zoxide -ErrorAction SilentlyContinue) {
+    Invoke-Expression (& { (zoxide init powershell --cmd cd | Out-String) })
 }
 
 # ---- Terminal Icons ----
