@@ -32,6 +32,7 @@ $packages = @(
     "junegunn.fzf"               # fzf
     "ajeetdsouza.zoxide"         # zoxide (smarter cd)
     "JesseDuffield.lazygit"      # lazygit
+    "Flow-Launcher.Flow-Launcher" # Flow Launcher
     "Microsoft.AzureCLI"         # Azure CLI
     "Schniz.fnm"                 # Fast Node Manager
 )
